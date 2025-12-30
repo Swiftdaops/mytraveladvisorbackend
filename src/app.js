@@ -24,9 +24,22 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
+// Configure CORS origins from env. Support a single origin or a
+// comma-separated list in `CLIENT_URL` or `CORS_ORIGINS`.
+const clientUrl = process.env.CLIENT_URL || '';
+const extraOrigins = process.env.CORS_ORIGINS || '';
+let corsOrigins = true;
+const merged = [
+  ...clientUrl.split(',').map((s) => s.trim()).filter(Boolean),
+  ...extraOrigins.split(',').map((s) => s.trim()).filter(Boolean),
+];
+if (merged.length > 0) {
+  corsOrigins = merged.length === 1 ? merged[0] : merged;
+}
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || true,
+    origin: corsOrigins,
     credentials: true,
   })
 );
